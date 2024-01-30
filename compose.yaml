@@ -1,0 +1,21 @@
+services:
+  yggdrasil:
+    image: docker.io/thallheim/yggdrasil:latest
+    hostname: yggdrasil
+    container_name: yggdrasil
+    environment:
+      - PUID=1000
+      - PGID=1000
+    networks:
+      - proxynet
+    ports:
+      - 80:80
+      - 444:443
+      - 8080:8080
+    # volumes:
+      # - ./index.html:/var/www/html/index.html:ro
+      # - ./livedata/letsencrypt:/etc/letsencrypt:z
+
+networks:
+  proxynet:
+    external: true
