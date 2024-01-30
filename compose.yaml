@@ -13,8 +13,8 @@ services:
       - 444:443
       - 8080:8080
     configs:
-      - source: ash-shell-profile
-        target: ~/.profile
+      # - source: ash-shell-profile
+      #   target: /.profile
       - source: nginx-conf
         target: /etc/nginx/nginx.conf
       - source: proxy-conf
@@ -25,9 +25,9 @@ networks:
     external: true
 
 configs:
-  ash-shell-profile:
-    file: ./includes/.profile
+  # ash-shell-profile:
+  #   file: ./includes/.profile
   nginx-conf:
-    file: ./includes/nginx.conf
+    file: ./includes/configs/nginx.conf
   proxy-conf:
-    file: ./includes/proxy.conf
+    file: ./includes/configs/proxy.conf
