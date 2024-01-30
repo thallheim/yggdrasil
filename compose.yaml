@@ -12,10 +12,18 @@ services:
       - 80:80
       - 444:443
       - 8080:8080
-    # volumes:
-      # - ./index.html:/var/www/html/index.html:ro
-      # - ./livedata/letsencrypt:/etc/letsencrypt:z
+    configs:
+      - source: nginx-conf
+        target: /etc/nginx/nginx.conf
+      - source: proxy-conf
+        target: /etc/nginx/proxy.conf
 
 networks:
   proxynet:
     external: true
+
+configs:
+  nginx-conf:
+    file: ./includes/nginx.conf
+  proxy-conf:
+    file: ./includes/proxy.conf
