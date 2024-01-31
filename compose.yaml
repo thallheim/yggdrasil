@@ -1,33 +1,39 @@
 services:
+
+############### YGGDRASIL ###############
   yggdrasil:
-    image: docker.io/thallheim/yggdrasil:latest
-    hostname: yggdrasil
+    image: traefik:2.10
+    # hostname: yggdrasil
     container_name: yggdrasil
-    environment:
-      - PUID=1000
-      - PGID=1000
+   # environment:
+      # - PUID=1000
+      # - PGID=1000
+    command:
+      - --log.level=info
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web-ssl.address=:443
     networks:
       - proxynet
     ports:
       - 80:80
-      - 444:443
+      - 443:443
       - 8080:8080
-    configs:
-      # - source: ash-shell-profile
-      #   target: /.profile
-      - source: nginx-conf
-        target: /etc/nginx/nginx.conf
-      - source: proxy-conf
-        target: /etc/nginx/proxy.conf
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./.secrets:/secrets:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`yggdrasil.thallheim.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.middlewares.auth.basicauth.usersfile=.secrets/users
+
 
 networks:
   proxynet:
     external: true
-
-configs:
-  # ash-shell-profile:
-  #   file: ./includes/.profile
-  nginx-conf:
-    file: ./includes/configs/nginx.conf
-  proxy-conf:
-    file: ./includes/configs/proxy.conf
