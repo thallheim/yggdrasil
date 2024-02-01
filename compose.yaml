@@ -2,20 +2,30 @@ services:
 
 ############### YGGDRASIL ###############
   yggdrasil:
-    image: traefik:2.10
-    # hostname: yggdrasil
+    image: traefik:3.0
     container_name: yggdrasil
    # environment:
       # - PUID=1000
       # - PGID=1000
     command:
+      # GENERAL / MISC.
       - --log.level=info
       - --api.dashboard=true
-      - --api.insecure=true
+      - --api.insecure=false
+      # PROVIDERS
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
+      # - --providers.docker.tls.cert=/etc/certs/star_thallheim_com.pem
+      # - --providers.docker.tls.key=/etc/certs/star_thallheim_com.key
+
+      # ENTRYPOINTS
       - --entrypoints.web.address=:80
-      - --entrypoints.web-ssl.address=:443
+      - --entrypoints.web-sec.address=:443
+
+      # HTTPS REDIRECT
+      - --entrypoints.web.http.redirections.entrypoint.to=web-sec
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+
     networks:
       - proxynet
     ports:
@@ -27,11 +37,14 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - ./.secrets:/secrets:ro
+      - ~/.certs/:/etc/certs:z,ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.dashboard.rule=Host(`yggdrasil.thallheim.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
       - traefik.http.routers.dashboard.service=api@internal
-      - traefik.http.middlewares.auth.basicauth.usersfile=.secrets/users
+
+      - traefik.http.routers.dashboard.middlewares=hAuth
+      - traefik.http.middlewares.hAuth.basicauth.usersFile=secrets/users
 
 
 networks:
