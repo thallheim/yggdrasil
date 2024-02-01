@@ -1,6 +1,8 @@
 services:
 
 ############### YGGDRASIL ###############
+# TLS/HTTPS redirects disabled:
+# Handled through CF
   yggdrasil:
     image: traefik:3.0
     container_name: yggdrasil
@@ -23,8 +25,8 @@ services:
       - --entrypoints.web-sec.address=:443
 
       # HTTPS REDIRECT
-      - --entrypoints.web.http.redirections.entrypoint.to=web-sec
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # - --entrypoints.web.http.redirections.entrypoint.to=web-sec
+      #- --entrypoints.web.http.redirections.entrypoint.scheme=https
 
     networks:
       - proxynet
@@ -44,6 +46,7 @@ services:
       - traefik.http.routers.dashboard.service=api@internal
 
       - traefik.http.routers.dashboard.middlewares=hAuth
+      # - traefik.http.routers.hyperthall.middlewares=hAuth
       - traefik.http.middlewares.hAuth.basicauth.usersFile=secrets/users
 
 
