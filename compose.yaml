@@ -6,12 +6,16 @@ services:
   yggdrasil:
     image: traefik:3.0
     container_name: yggdrasil
-   # environment:
-      # - PUID=1000
-      # - PGID=1000
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/CF_DNS_API_TOKEN
+      - DOMAINNAME=$DOMAINNAME # Passed for use in rules
     command:
       # GENERAL / MISC.
-      - --log.level=info
+      - --log.level=debug
       - --api.dashboard=true
       - --api.insecure=false
       # PROVIDERS
@@ -26,30 +30,37 @@ services:
 
       # HTTPS REDIRECT
       # - --entrypoints.web.http.redirections.entrypoint.to=web-sec
-      #- --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # - --entrypoints.web.http.redirections.entrypoint.scheme=https
 
     networks:
       - proxynet
     ports:
       - 80:80
       - 443:443
-      - 8080:8080
+      # - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - ./.secrets:/secrets:ro
       - ~/.certs/:/etc/certs:z,ro
+    secrets:
+      - CF_DNS_API_TOKEN
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`yggdrasil.thallheim.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      - traefik.http.routers.dashboard.rule=Host(`$DOMAINNAME`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard/`))
       - traefik.http.routers.dashboard.service=api@internal
 
       - traefik.http.routers.dashboard.middlewares=hAuth
       # - traefik.http.routers.hyperthall.middlewares=hAuth
       - traefik.http.middlewares.hAuth.basicauth.usersFile=secrets/users
 
-
 networks:
   proxynet:
     external: true
+
+secrets:
+  # basic_auth_credentials:
+  #   file: $DOCKERDIR/secrets/basic_auth_credentials
+  CF_DNS_API_TOKEN:
+    file: $DOCKERDIR/secrets/CF_DNS_API_TOKEN
