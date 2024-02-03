@@ -27,6 +27,7 @@ services:
       # ENTRYPOINTS
       - --entrypoints.web.address=:80
       - --entrypoints.web-sec.address=:443
+      - --entrypoints.tcp.address=:9000
 
       # HTTPS REDIRECT
       # - --entrypoints.web.http.redirections.entrypoint.to=web-sec
@@ -37,6 +38,7 @@ services:
     ports:
       - 80:80
       - 443:443
+
       # - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -52,7 +54,6 @@ services:
       - traefik.http.routers.dashboard.service=api@internal
 
       - traefik.http.routers.dashboard.middlewares=hAuth
-      # - traefik.http.routers.hyperthall.middlewares=hAuth
       - traefik.http.middlewares.hAuth.basicauth.usersFile=secrets/users
 
 networks:
